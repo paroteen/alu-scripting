@@ -1,43 +1,29 @@
 #!/usr/bin/python3
-"""Queries the Reddit API and
-prints the titles of the first
-10 hot posts listed for a given
-subreddit.
 """
+1-top_ten.py: Top Ten
+
+This module contains a function that queries the Reddit API and prints the
+titles of the first 10 hot posts listed for a given subreddit.
+"""
+
 import requests
 
 
 def top_ten(subreddit):
-    """Prints the titles of the first
-    10 hot posts listed for a given
-    subreddit.
-    """
-    # Set the Default URL strings
-    base_url = 'https://www.reddit.com'
-    api_uri = '{base}/r/{subreddit}/hot.json'.format(base=base_url,
-                                                     subreddit=subreddit)
+    """Prints the top ten hot posts for a given subreddit"""
 
-    # Set an User-Agent
-    user_agent = {'User-Agent': 'Python/requests'}
+    url = "https://www.reddit.com/r/{}/hot.json?limit=10".format(subreddit)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    response = requests.get(url, headers=headers)
 
-    # Set the Query Strings to Request
-    payload = {'limit': '10'}
+    if response.status_code != 200:
+        print(None)
+        return
 
-    # Get the Response of the Reddit API
-    res = requests.get(api_uri, headers=user_agent,
-                       params=payload, allow_redirects=False)
+    data = response.json().get("data")
+    if data is None or len(data.get("children")) == 0:
+        print(None)
+        return
 
-    # Checks if the subreddit is invalid
-    if res.status_code in [302, 404]:
-        print('None')
-    else:
-        res_json = res.json()
-
-        if res_json.get('data') and res_json.get('data').get('children'):
-            # Get the 10 hot posts of the subreddit
-            hot_posts = res_json.get('data').get('children')
-
-            # Print each hot post title
-            for post in hot_posts:
-                if post.get('data') and post.get('data').get('title'):
-                    print(post.get('data').get('title'))
+    for child in data.get("children"):
+        print(child.get("data").get("title"))
